@@ -66,20 +66,33 @@ class ScheduleViewModel @Inject constructor(
         currentUserId?.let { userId ->
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            val subjectsResult = repository.fetchSubjects(userId)
-            val tasksResult = repository.fetchTasks(userId)
+            try {
+                val subjectsResult = repository.fetchSubjects(userId)
+                val tasksResult = repository.fetchTasks(userId)
 
-            if (subjectsResult.isSuccess && tasksResult.isSuccess) {
+                if (subjectsResult.isSuccess && tasksResult.isSuccess) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            subjects = subjectsResult.getOrNull() ?: emptyList(),
+                            tasks = tasksResult.getOrNull() ?: emptyList()
+                        )
+                    }
+                } else {
+                    // Обработка случая, если сервер вернул Failure
+                    _uiState.update {
+                        it.copy(isLoading = false, error = "Ошибка при получении данных с сервера")
+                    }
+                }
+            } catch (e: Exception) {
+                // ПЕРЕХВАТ ПАДЕНИЯ: Если данные кривые или отвалилась сеть,
+                // мы всё равно обязаны снять загрузку!
+                Log.e("ScheduleViewModel", "Critical error in loadData", e)
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        subjects = subjectsResult.getOrNull() ?: emptyList(),
-                        tasks = tasksResult.getOrNull() ?: emptyList()
+                        error = "Системная ошибка при загрузке данных: ${e.localizedMessage}"
                     )
-                }
-            } else {
-                _uiState.update {
-                    it.copy(isLoading = false, error = "Ошибка загрузки данных")
                 }
             }
         }
@@ -107,11 +120,16 @@ class ScheduleViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             try {
                 val result = repository.deleteSubject(subjectId)
-                result.onSuccess {
+
+                // ИСПРАВЛЕНО: проверяем и успешный, и неуспешный сценарий
+                if (result.isSuccess) {
                     loadData()
+                } else {
+                    _uiState.update {
+                        it.copy(isLoading = false, error = "Не удалось удалить предмет")
+                    }
                 }
             } catch (e: Exception) {
-
                 Log.e("Error delete", e.toString())
                 _uiState.update {
                     it.copy(

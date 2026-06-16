@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.praktika.studentdiary.domain.model.Task
 import com.praktika.studentdiary.presentation.events.ScheduleScreenEvents
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun TasksList(
@@ -48,7 +49,7 @@ fun TasksList(
                         Column {
                             Text(task.title, style = MaterialTheme.typography.titleMedium)
                             Text(
-                                task.dueDate.toString(),
+                                task.dueDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
