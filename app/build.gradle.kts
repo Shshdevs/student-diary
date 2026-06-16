@@ -29,12 +29,17 @@ android {
         buildConfigField(
             "String",
             "SUPABASE_URL",
-            properties.getOrElse("SUPABASE_URL", {}) as String
+            properties.getOrElse("SUPABASE_URL", {""}) as String
         )
         buildConfigField(
             "String",
             "SUPABASE_KEY",
-            properties.getOrElse("SUPABASE_KEY", {}) as String
+            properties.getOrElse("SUPABASE_KEY", {""}) as String
+        )
+        buildConfigField(
+            "String",
+            "MISTRAL_API_KEY",
+            properties.getOrElse("MISTRAL_API_KEY", {""}) as String
         )
     }
 
@@ -88,8 +93,12 @@ dependencies {
     implementation(libs.supabase.postgrest)
     implementation(libs.supabase.storage)
     implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.logging)
 
     implementation(libs.hilt)
     implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
+
+
+    implementation(libs.pdfbox.android)
 }

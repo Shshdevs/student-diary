@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.praktika.studentdiary.presentation.ui.screen.AuthScreen
 import com.praktika.studentdiary.presentation.ui.screen.DashboardScreen
+import com.praktika.studentdiary.presentation.ui.screen.MaterialsScreen
 import com.praktika.studentdiary.presentation.ui.screen.ScheduleScreen
 
 @Composable
@@ -56,6 +57,7 @@ fun NavHostContainer(
             ScheduleScreen()
         }
         composable("materials") {
+            MaterialsScreen()
 
         }
         composable("simulator") {

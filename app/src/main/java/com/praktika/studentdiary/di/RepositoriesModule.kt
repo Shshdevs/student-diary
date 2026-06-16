@@ -2,9 +2,11 @@ package com.praktika.studentdiary.di
 
 import com.praktika.studentdiary.data.repository.AuthRepositoryImpl
 import com.praktika.studentdiary.data.repository.DashboardRepositoryImpl
+import com.praktika.studentdiary.data.repository.MaterialsRepositoryImpl
 import com.praktika.studentdiary.data.repository.ScheduleRepositoryImpl
 import com.praktika.studentdiary.domain.repository.AuthRepository
 import com.praktika.studentdiary.domain.repository.DashboardRepository
+import com.praktika.studentdiary.domain.repository.MaterialsRepository
 import com.praktika.studentdiary.domain.repository.ScheduleRepository
 import dagger.Binds
 import dagger.Module
@@ -32,4 +34,12 @@ abstract class RepositoriesModule {
     abstract fun bindDashboardRepository(
         dashboardRepositoryImpl: DashboardRepositoryImpl,
     ): DashboardRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMaterialsRepository(
+        dashboardRepositoryImpl: MaterialsRepositoryImpl,
+    ): MaterialsRepository
+
+
 }
