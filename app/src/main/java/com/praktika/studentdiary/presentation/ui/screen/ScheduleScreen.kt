@@ -106,7 +106,7 @@ fun ScheduleScreenContent(
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 when (page) {
-                    0 -> TasksList(tasks = uiState.tasks, onEvent = onEvent)
+                    0 -> TasksList(tasks = uiState.tasks, onEvent = onEvent,)
                     1 -> SubjectsList(subjects = uiState.subjects, onEvent = onEvent)
                 }
             }
