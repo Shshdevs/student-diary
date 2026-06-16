@@ -26,10 +26,32 @@ class MaterialsScreenViewModel @Inject constructor(
     private val materialsRepository: MaterialsRepository,
     private val pdfParserSource: PdfParserSource,
 ) : ViewModel() {
+
     private val _uiState = MutableStateFlow(MaterialsScreenUiModel())
     val uiState: StateFlow<MaterialsScreenUiModel> = _uiState.asStateFlow()
-
     private var currentUserId: String? = null
+
+    private fun safeLaunch(
+        loadingState: (Boolean) -> MaterialsScreenUiModel = { _uiState.value.copy(isLoading = it) },
+        isAiAction: Boolean = false,
+        errorMessage: String = "Произошла ошибка",
+        action: suspend () -> Unit,
+    ) {
+        viewModelScope.launch {
+            _uiState.update { loadingState(true) }
+            try {
+                action()
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        isGeneratingAi = false,
+                        error = "$errorMessage: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
 
     init {
         viewModelScope.launch {
@@ -47,10 +69,7 @@ class MaterialsScreenViewModel @Inject constructor(
         when (event) {
             is MaterialsScreenEvents.LoadSubjects -> loadSubjects()
             is MaterialsScreenEvents.SelectSubject -> selectSubject(event.subjectId)
-            is MaterialsScreenEvents.SelectMaterial -> {
-                _uiState.update { it.copy(selectedMaterial = event.material) }
-            }
-
+            is MaterialsScreenEvents.SelectMaterial -> _uiState.update { it.copy(selectedMaterial = event.material) }
             is MaterialsScreenEvents.GenerateMaterial -> generateMaterial(
                 event.title,
                 event.rawText
@@ -58,35 +77,23 @@ class MaterialsScreenViewModel @Inject constructor(
 
             is MaterialsScreenEvents.DeleteMaterial -> deleteMaterial(event.materialId)
             is MaterialsScreenEvents.ImportPdf -> importPdf(event.uri, event.fileName)
-            is MaterialsScreenEvents.DismissError -> {
-                _uiState.update { it.copy(error = null) }
-            }
+            is MaterialsScreenEvents.DismissError -> _uiState.update { it.copy(error = null) }
         }
     }
 
     private fun loadSubjects() {
         val userId = currentUserId ?: return
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-
-            val result =
-                scheduleRepository.fetchSubjects(userId)
-
-            if (result.isSuccess) {
-                val subjects = result.getOrDefault(emptyList())
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        subjects = subjects,
-                        selectedSubjectId = subjects.firstOrNull()?.id ?: it.selectedSubjectId
-                    )
-                }
-                _uiState.value.selectedSubjectId?.let { loadMaterialsForSubject(it) }
-            } else {
-                _uiState.update {
-                    it.copy(isLoading = false, error = result.exceptionOrNull()?.message)
-                }
+        safeLaunch(errorMessage = "Ошибка загрузки предметов") {
+            val result = scheduleRepository.fetchSubjects(userId)
+            val subjects = result.getOrDefault(emptyList())
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    subjects = subjects,
+                    selectedSubjectId = subjects.firstOrNull()?.id
+                )
             }
+            subjects.firstOrNull()?.id?.let { loadMaterialsForSubject(it) }
         }
     }
 
@@ -96,119 +103,53 @@ class MaterialsScreenViewModel @Inject constructor(
     }
 
     private fun loadMaterialsForSubject(subjectId: String) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-
+        safeLaunch(errorMessage = "Ошибка загрузки материалов") {
             val result = materialsRepository.getMaterialsForSubject(subjectId)
-
-            if (result.isSuccess) {
-                _uiState.update {
-                    it.copy(isLoading = false, materials = result.getOrDefault(emptyList()))
-                }
-            } else {
-                _uiState.update {
-                    it.copy(isLoading = false, error = result.exceptionOrNull()?.message)
-                }
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    materials = result.getOrDefault(emptyList())
+                )
             }
         }
     }
 
     private fun generateMaterial(title: String, rawText: String) {
-        val userId = currentUserId
-        val subjectId = _uiState.value.selectedSubjectId
+        val userId = currentUserId ?: return
+        val subjectId = _uiState.value.selectedSubjectId ?: return
 
-        if (userId == null || subjectId == null) {
-            _uiState.update { it.copy(error = "Ошибка: не выбран предмет или нет авторизации") }
-            return
-        }
-
-        if (rawText.isBlank()) {
-            _uiState.update { it.copy(error = "Текст лекции не может быть пустым") }
-            return
-        }
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(isGeneratingAi = true) }
-
-            val result =
-                materialsRepository.processAndSaveNewMaterial(userId, subjectId, title, rawText)
-
-            if (result.isSuccess) {
-                _uiState.update { it.copy(isGeneratingAi = false) }
-                loadMaterialsForSubject(subjectId)
-            } else {
-                _uiState.update {
-                    it.copy(
-                        isGeneratingAi = false,
-                        error = "Ошибка генерации ИИ: ${result.exceptionOrNull()?.message}"
-                    )
-                }
-            }
+        safeLaunch(isAiAction = true, errorMessage = "Ошибка генерации ИИ") {
+            materialsRepository.processAndSaveNewMaterial(userId, subjectId, title, rawText)
+            _uiState.update { it.copy(isGeneratingAi = false) }
+            loadMaterialsForSubject(subjectId)
         }
     }
 
     private fun deleteMaterial(materialId: String) {
         val subjectId = _uiState.value.selectedSubjectId ?: return
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val result = materialsRepository.deleteMaterial(materialId)
-
-            if (result.isSuccess) {
-                if (_uiState.value.selectedMaterial?.id == materialId) {
-                    _uiState.update { it.copy(selectedMaterial = null) }
-                }
-                loadMaterialsForSubject(subjectId)
-            } else {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = "Ошибка удаления: ${result.exceptionOrNull()?.message}"
-                    )
-                }
+        safeLaunch(errorMessage = "Ошибка удаления") {
+            materialsRepository.deleteMaterial(materialId)
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    selectedMaterial = if (it.selectedMaterial?.id == materialId) null else it.selectedMaterial
+                )
             }
+            loadMaterialsForSubject(subjectId)
         }
     }
 
     private fun importPdf(uri: Uri, fileName: String) {
-        val userId = currentUserId
-        val subjectId = _uiState.value.selectedSubjectId
+        val userId = currentUserId ?: return
+        val subjectId = _uiState.value.selectedSubjectId ?: return
 
-        if (userId == null || subjectId == null) {
-            _uiState.update { it.copy(error = "Предмет не выбран или нет авторизации") }
-            return
-        }
+        safeLaunch(isAiAction = true, errorMessage = "Ошибка обработки PDF") {
+            val rawText = pdfParserSource.extractTextFromPdf(uri)
+            if (rawText.isBlank()) throw Exception("PDF пуст")
 
-        viewModelScope.launch {
-            _uiState.update { it.copy(isGeneratingAi = true) }
-
-            try {
-                val rawText = pdfParserSource.extractTextFromPdf(uri)
-
-                if (rawText.isBlank()) {
-                    throw Exception("PDF пуст или не содержит текста")
-                }
-                val result = materialsRepository.processAndSaveNewMaterial(
-                    userId = userId,
-                    subjectId = subjectId,
-                    title = fileName,
-                    rawText = rawText
-                )
-
-                if (result.isSuccess) {
-                    _uiState.update { it.copy(isGeneratingAi = false) }
-                    loadMaterialsForSubject(subjectId)
-                } else {
-                    throw Exception(result.exceptionOrNull()?.message ?: "Ошибка API")
-                }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isGeneratingAi = false,
-                        error = "Ошибка обработки PDF: ${e.message}"
-                    )
-                }
-            }
+            materialsRepository.processAndSaveNewMaterial(userId, subjectId, fileName, rawText)
+            _uiState.update { it.copy(isGeneratingAi = false) }
+            loadMaterialsForSubject(subjectId)
         }
     }
 }

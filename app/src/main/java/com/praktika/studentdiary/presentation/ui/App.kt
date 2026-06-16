@@ -15,7 +15,7 @@ fun App(navigator: Navigator) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            if (navController.currentDestination?.route != "auth") {
+            if (navController.currentBackStackEntry?.destination?.route != "auth") {
                 BottomNavBar(
                     navController = navController,
                     navigator = navigator

@@ -1,6 +1,5 @@
 package com.praktika.studentdiary.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.praktika.studentdiary.domain.repository.AuthRepository
@@ -62,110 +61,89 @@ class ScheduleViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadData() {
-        currentUserId?.let { userId ->
-            _uiState.update { it.copy(isLoading = true, error = null) }
-
+    private fun safeLaunch(
+        errorMessage: String,
+        onSuccess: suspend () -> Unit,
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
             try {
-                val subjectsResult = repository.fetchSubjects(userId)
-                val tasksResult = repository.fetchTasks(userId)
-
-                if (subjectsResult.isSuccess && tasksResult.isSuccess) {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            subjects = subjectsResult.getOrNull() ?: emptyList(),
-                            tasks = tasksResult.getOrNull() ?: emptyList()
-                        )
-                    }
-                } else {
-                    // Обработка случая, если сервер вернул Failure
-                    _uiState.update {
-                        it.copy(isLoading = false, error = "Ошибка при получении данных с сервера")
-                    }
-                }
+                onSuccess()
             } catch (e: Exception) {
-                // ПЕРЕХВАТ ПАДЕНИЯ: Если данные кривые или отвалилась сеть,
-                // мы всё равно обязаны снять загрузку!
-                Log.e("ScheduleViewModel", "Critical error in loadData", e)
                 _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = "Системная ошибка при загрузке данных: ${e.localizedMessage}"
-                    )
+                    it.copy(isLoading = false, error = errorMessage)
                 }
             }
         }
     }
 
-    private fun createSubject(name: String) {
-        viewModelScope.launch {
-            currentUserId?.let { userId ->
-                _uiState.update { it.copy(isLoading = true) }
-                val result = repository.createSubject(userId, name)
-                if (result.isSuccess) {
-                    _uiState.update { it.copy(showAddSubjectDialog = false) }
-                    loadData()
-                } else {
-                    _uiState.update {
-                        it.copy(isLoading = false, error = "Не удалось создать предмет")
-                    }
+    private suspend fun loadData() {
+        currentUserId?.let { userId ->
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                val subjects = repository.fetchSubjects(userId)
+                val tasks = repository.fetchTasks(userId)
+
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        subjects = subjects.getOrNull() ?: emptyList(),
+                        tasks = tasks.getOrNull() ?: emptyList()
+                    )
                 }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = "Ошибка загрузки") }
             }
         }
     }
 
     private fun deleteSubject(subjectId: String) {
-        viewModelScope.launch {
+        safeLaunch("Не удалось удалить предмет") {
             _uiState.update { it.copy(isLoading = true) }
-            try {
-                val result = repository.deleteSubject(subjectId)
+            val result = repository.deleteSubject(subjectId)
+            if (result.isSuccess) {
+                loadData()
+            } else {
+                _uiState.update { it.copy(isLoading = false, error = "Не удалось удалить") }
+            }
+        }
+    }
 
-                // ИСПРАВЛЕНО: проверяем и успешный, и неуспешный сценарий
+    private fun createSubject(name: String) {
+        safeLaunch("Не удалось создать предмет") {
+            currentUserId?.let { userId ->
+                val result = repository.createSubject(userId, name)
                 if (result.isSuccess) {
-                    loadData()
+                    _uiState.update { it.copy(showAddSubjectDialog = false) }
+                    loadData() // Сбрасывает isLoading внутри себя
                 } else {
-                    _uiState.update {
-                        it.copy(isLoading = false, error = "Не удалось удалить предмет")
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("Error delete", e.toString())
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = "Невозможно удалить предмет: он используется."
-                    )
+                    _uiState.update { it.copy(isLoading = false) }
                 }
             }
         }
     }
 
     private fun createTask(subjectId: String, title: String, type: String, dueDate: LocalDateTime) {
-        viewModelScope.launch {
+        safeLaunch("Не удалось создать задачу") {
             currentUserId?.let { userId ->
-                _uiState.update { it.copy(isLoading = true) }
                 val result = repository.createTask(userId, subjectId, title, type, dueDate)
                 if (result.isSuccess) {
                     _uiState.update { it.copy(showAddTaskDialog = false) }
                     loadData()
                 } else {
-                    _uiState.update {
-                        it.copy(isLoading = false, error = "Не удалось создать задачу")
-                    }
+                    _uiState.update { it.copy(isLoading = false) }
                 }
             }
         }
     }
 
     private fun completeTask(taskId: String) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+        safeLaunch("Ошибка завершения задачи") {
             val result = repository.completeTask(taskId)
             if (result.isSuccess) {
                 loadData()
             } else {
-                _uiState.update { it.copy(isLoading = false, error = "Ошибка завершения задачи") }
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }

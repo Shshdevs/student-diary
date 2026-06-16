@@ -7,6 +7,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.praktika.studentdiary.presentation.ui.screen.AuthScreen
 import com.praktika.studentdiary.presentation.ui.screen.DashboardScreen
@@ -47,21 +48,51 @@ fun NavHostContainer(
         startDestination = "auth",
         modifier = Modifier.padding(paddingValues)
     ) {
-        composable("auth") {
-            AuthScreen()
+        navigation(
+            route = "auth",
+            startDestination = "auth"
+        ) {
+            composable("auth") {
+                AuthScreen()
+            }
         }
-        composable("dashboard") {
-            DashboardScreen()
-        }
-        composable("calendar") {
-            ScheduleScreen()
-        }
-        composable("materials") {
-            MaterialsScreen()
 
+        navigation(
+            route = "dashboard",
+            startDestination = "dashboard"
+        ) {
+            composable("dashboard") {
+                DashboardScreen()
+            }
         }
-        composable("simulator") {
 
+        navigation(
+            route = "calendar",
+            startDestination = "calendar"
+        ) {
+            composable("calendar") {
+                ScheduleScreen()
+            }
         }
+
+        navigation(
+            route = "materials",
+            startDestination = "materials"
+        ) {
+            composable("materials") {
+                MaterialsScreen()
+            }
+        }
+
+        navigation(
+            route = "simulator",
+            startDestination = "simulator"
+        ) {
+            composable("simulator") {
+
+            }
+        }
+
+
     }
 }

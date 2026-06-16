@@ -10,7 +10,8 @@ import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -29,43 +30,40 @@ class DashboardViewModel @Inject constructor(
 
     private fun loadDashboardData() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            _uiState.update { it.copy(isLoading = true, error = null) }
 
             try {
-                val sessionState = authRepository.sessionState.first()
-                val userId = if (sessionState is SessionStatus.Authenticated) {
-                    sessionState.session.user?.id
-                } else null
+                val sessionState = authRepository.sessionState.firstOrNull()
+
+                val userId = (sessionState as? SessionStatus.Authenticated)?.session?.user?.id
 
                 if (userId != null) {
                     val result = repository.getDashboardData(userId)
 
                     result.fold(
                         onSuccess = { dashboardData ->
-                            _uiState.value = _uiState.value.copy(
-                                isLoading = false,
-                                data = dashboardData
-                            )
+                            _uiState.update {
+                                it.copy(isLoading = false, data = dashboardData, error = null)
+                            }
                         },
                         onFailure = { exception ->
-                            _uiState.value = _uiState.value.copy(
-                                isLoading = false,
-                                error = exception.message
-                                    ?: "Произошла ошибка при загрузке дашборда"
-                            )
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    error = exception.message ?: "Ошибка сервера"
+                                )
+                            }
                         }
                     )
                 } else {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = "Пользователь не авторизован"
-                    )
+                    _uiState.update {
+                        it.copy(isLoading = false, error = "Пользователь не авторизован")
+                    }
                 }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.localizedMessage ?: "Неизвестная ошибка"
-                )
+                _uiState.update {
+                    it.copy(isLoading = false, error = "Ошибка сети: ${e.localizedMessage}")
+                }
             }
         }
     }
