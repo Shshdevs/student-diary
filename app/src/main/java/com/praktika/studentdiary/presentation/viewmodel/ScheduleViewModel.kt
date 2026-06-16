@@ -3,6 +3,7 @@ package com.praktika.studentdiary.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.praktika.studentdiary.domain.repository.AuthRepository
+import com.praktika.studentdiary.domain.repository.DashboardRepository
 import com.praktika.studentdiary.domain.repository.ScheduleRepository
 import com.praktika.studentdiary.presentation.events.ScheduleScreenEvents
 import com.praktika.studentdiary.presentation.model.ScheduleUiModel
@@ -21,6 +22,7 @@ import javax.inject.Inject
 class ScheduleViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val repository: ScheduleRepository,
+    private val dashboardRepository: DashboardRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ScheduleUiModel())
@@ -139,11 +141,26 @@ class ScheduleViewModel @Inject constructor(
 
     private fun completeTask(taskId: String) {
         safeLaunch("Ошибка завершения задачи") {
+            val task = _uiState.value.tasks.find { it.id == taskId }
+
             val result = repository.completeTask(taskId)
             if (result.isSuccess) {
+                task?.let { addTimeLog(it.subjectId, 30) }
+
                 loadData()
             } else {
                 _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    fun addTimeLog(subjectId: String, minutes: Int) {
+        viewModelScope.launch {
+            try {
+                currentUserId?.let { userId ->
+                    dashboardRepository.logTime(userId, subjectId, minutes)
+                }
+            } catch (e: Exception) {
             }
         }
     }

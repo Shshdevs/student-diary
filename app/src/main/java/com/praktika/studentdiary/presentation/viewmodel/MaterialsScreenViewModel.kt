@@ -1,11 +1,11 @@
 package com.praktika.studentdiary.presentation.viewmodel
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.praktika.studentdiary.data.source.PdfParserSource
 import com.praktika.studentdiary.domain.repository.AuthRepository
+import com.praktika.studentdiary.domain.repository.DashboardRepository
 import com.praktika.studentdiary.domain.repository.MaterialsRepository
 import com.praktika.studentdiary.domain.repository.ScheduleRepository
 import com.praktika.studentdiary.presentation.events.MaterialsScreenEvents
@@ -28,6 +28,7 @@ class MaterialsScreenViewModel @Inject constructor(
     private val scheduleRepository: ScheduleRepository,
     private val materialsRepository: MaterialsRepository,
     private val pdfParserSource: PdfParserSource,
+    private val dashboardRepository: DashboardRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MaterialsScreenUiModel())
@@ -153,10 +154,23 @@ class MaterialsScreenViewModel @Inject constructor(
             val rawText = pdfParserSource.extractTextFromPdf(uri)
             if (rawText.isBlank()) throw Exception("PDF пуст")
 
-            Log.d("PDF", rawText)
             materialsRepository.processAndSaveNewMaterial(userId, subjectId, fileName, rawText)
+
+            addTimeLog(subjectId, 20)
+
             _uiState.update { it.copy(isGeneratingAi = false) }
             loadMaterialsForSubject(subjectId)
+        }
+    }
+
+    fun addTimeLog(subjectId: String, minutes: Int) {
+        viewModelScope.launch {
+            try {
+                currentUserId?.let { userId ->
+                    dashboardRepository.logTime(userId, subjectId, minutes)
+                }
+            } catch (e: Exception) {
+            }
         }
     }
 }

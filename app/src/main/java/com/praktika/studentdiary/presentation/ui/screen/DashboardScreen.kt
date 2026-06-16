@@ -25,7 +25,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.praktika.studentdiary.presentation.model.DashboardUiModel
 import com.praktika.studentdiary.presentation.ui.components.ExamTimerCard
 import com.praktika.studentdiary.presentation.ui.components.MissedDeadlinesCard
-import com.praktika.studentdiary.presentation.ui.components.SubjectsProgressCard
 import com.praktika.studentdiary.presentation.ui.components.SummaryStatisticsCard
 import com.praktika.studentdiary.presentation.viewmodel.DashboardViewModel
 
@@ -100,8 +99,6 @@ fun DashboardScreenContent(
                         ExamTimerCard(nearestExamDate = data.nearestExamDate)
 
                         MissedDeadlinesCard(count = data.missedDeadlinesCount)
-
-                        SubjectsProgressCard(progressMap = data.subjectsProgress)
 
                         SummaryStatisticsCard(
                             averageScore = data.averageTestScore,

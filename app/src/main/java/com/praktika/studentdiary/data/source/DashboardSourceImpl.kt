@@ -54,4 +54,8 @@ class DashboardSourceImpl @Inject constructor(
             filter { eq("user_id", userId) }
         }.decodeList<SubjectDto>()
     }
+
+    override suspend fun insertTimeLog(timeLog: TimeLogDto) {
+        postgrest["time_logs"].insert(timeLog)
+    }
 }

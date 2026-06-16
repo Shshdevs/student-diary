@@ -1,8 +1,10 @@
 package com.praktika.studentdiary.data.repository
 
+import com.praktika.studentdiary.data.dto.TimeLogDto
 import com.praktika.studentdiary.data.source.DashboardSource
 import com.praktika.studentdiary.domain.model.DashboardData
 import com.praktika.studentdiary.domain.repository.DashboardRepository
+import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -49,6 +51,29 @@ class DashboardRepositoryImpl @Inject constructor(
             )
 
             Result.success(dashboardData)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun logTime(
+        userId: String,
+        subjectId: String,
+        timeSpentMinutes: Int,
+    ): Result<Unit> {
+        return try {
+            val today =
+                LocalDate.now().toString()
+
+            val timeLog = TimeLogDto(
+                userId = userId,
+                subjectId = subjectId,
+                timeSpentMinutes = timeSpentMinutes,
+                logDate = today
+            )
+
+            source.insertTimeLog(timeLog)
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }

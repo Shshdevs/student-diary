@@ -10,4 +10,5 @@ data class TimeLogDto(
     @SerialName("user_id") val userId: String,
     @SerialName("subject_id") val subjectId: String,
     @SerialName("time_spent_minutes") val timeSpentMinutes: Int,
+    @SerialName("log_date") val logDate: String,
 )

@@ -3,6 +3,7 @@ package com.praktika.studentdiary.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.praktika.studentdiary.domain.repository.AuthRepository
+import com.praktika.studentdiary.domain.repository.DashboardRepository
 import com.praktika.studentdiary.domain.repository.MaterialsRepository
 import com.praktika.studentdiary.domain.repository.TestRepository
 import com.praktika.studentdiary.presentation.events.SimulatorScreenEvents
@@ -23,6 +24,7 @@ class SimulatorViewModel @Inject constructor(
     private val testRepository: TestRepository,
     private val authRepository: AuthRepository,
     private val materialsRepository: MaterialsRepository,
+    private val dashboardRepository: DashboardRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SimulatorScreenUiModel())
@@ -189,7 +191,7 @@ class SimulatorViewModel @Inject constructor(
         viewModelScope.launch {
             val result = testRepository.saveTestAttempt(
                 testId = test.id,
-                userId = userId, // Используем локальный userId
+                userId = userId,
                 scorePercent = scorePercent
             )
 
@@ -200,4 +202,5 @@ class SimulatorViewModel @Inject constructor(
             }
         }
     }
+
 }

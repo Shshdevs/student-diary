@@ -11,4 +11,5 @@ interface DashboardSource {
     suspend fun getTestAttempts(userId: String): List<TestAttemptDto>
     suspend fun getTimeLogs(userId: String): List<TimeLogDto>
     suspend fun getSubjects(userId: String): List<SubjectDto>
+    suspend fun insertTimeLog(timeLog: TimeLogDto)
 }

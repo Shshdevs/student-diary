@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -74,10 +75,11 @@ fun TasksList(
                             Text(
                                 text = task.title,
                                 style = MaterialTheme.typography.titleMedium,
-                                color = Color.Black
+                                color = Color.Black,
+                                modifier = Modifier.width(220.dp)
                             )
                             Text(
-                                text = task.dueDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                                text = task.dueDate.format(DateTimeFormatter.ofPattern("MM.dd HH:mm:ss")),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color.DarkGray
                             )
