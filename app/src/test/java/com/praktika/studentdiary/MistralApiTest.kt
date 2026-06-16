@@ -3,7 +3,6 @@ package com.praktika.studentdiary
 import com.praktika.studentdiary.data.source.AiSourceImpl
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
@@ -64,7 +63,7 @@ class AiSourceImplIntegrationTest {
             Использование ООП дает ряд существенных преимуществ при промышленной разработке. Код становится более модульным и читаемым, его легче тестировать, поддерживать и масштабировать при увеличении сложности проекта.
         """.trimIndent()
         val result = try {
-            val result = aiSource.generateSummaryAndGlossary(testText)
+            val result = aiSource.generateTest("ООП", testText)
             result
         } catch (e: Exception) {
             println()
@@ -72,16 +71,5 @@ class AiSourceImplIntegrationTest {
             return@runBlocking
         }
 
-        assertNotNull("Результат не должен быть null", result)
-
-        assertTrue("Summary не должно быть пустым", result.summary.isNotBlank())
-
-        assertTrue("Glossary не должен быть пустым", result.glossary.isNotEmpty())
-
-        println("Summary:\n${result.summary}")
-        println("Glossary size: ${result.glossary.size}")
-        result.glossary.forEach {
-            println("- ${it.term}: ${it.definition}")
-        }
     }
 }

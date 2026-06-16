@@ -4,10 +4,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TestAttemptDto(
+data class QuestionDto(
     @SerialName("id") val id: String? = null,
     @SerialName("test_id") val testId: String,
-    @SerialName("user_id") val userId: String,
-    @SerialName("score_percent") val scorePercent: Double,
-    @SerialName("attempt_date") val attemptDate: String? = null,
+    @SerialName("question_text") val questionText: String,
+    @SerialName("question_type") val questionType: String,
+    @SerialName("difficulty_level") val difficultyLevel: Int,
 )
