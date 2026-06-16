@@ -27,22 +27,19 @@ import com.praktika.studentdiary.presentation.viewmodel.SimulatorViewModel
 
 @Composable
 fun SimulatorScreen(
-    materialId: String,
-    userId: String,
-    materialTitle: String,
-    rawText: String,
+    materialId: String?,
     viewModel: SimulatorViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(materialId, userId) {
-        viewModel.onEvent(SimulatorScreenEvents.LoadData(materialId, userId))
+    LaunchedEffect(materialId) {
+        if (!materialId.isNullOrBlank()) {
+            viewModel.onEvent(SimulatorScreenEvents.LoadData(materialId))
+        }
     }
 
     SimulatorScreenContent(
         uiState = uiState,
-        materialTitle = materialTitle,
-        rawText = rawText,
         onEvent = viewModel::onEvent
     )
 }
@@ -51,8 +48,6 @@ fun SimulatorScreen(
 @Composable
 fun SimulatorScreenContent(
     uiState: SimulatorScreenUiModel,
-    materialTitle: String,
-    rawText: String,
     onEvent: (SimulatorScreenEvents) -> Unit,
 ) {
     Scaffold(
@@ -88,12 +83,7 @@ fun SimulatorScreenContent(
                 uiState.test == null -> {
                     EmptyTestView(
                         onGenerateClick = {
-                            onEvent(
-                                SimulatorScreenEvents.GenerateTest(
-                                    materialTitle,
-                                    rawText
-                                )
-                            )
+                            onEvent(SimulatorScreenEvents.GenerateTest)
                         },
                         modifier = Modifier.align(Alignment.Center)
                     )

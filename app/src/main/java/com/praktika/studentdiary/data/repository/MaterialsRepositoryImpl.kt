@@ -17,6 +17,23 @@ class MaterialsRepositoryImpl @Inject constructor(
     private val aiSource: AiSource,
 ) : MaterialsRepository {
 
+    override suspend fun getMaterialById(materialId: String): Result<Material> {
+        return try {
+            val dto = materialsSource.getMaterialById(materialId)
+            val glossaryDtos = materialsSource.getGlossary(dto.id)
+
+            val material = Material(
+                id = dto.id,
+                title = dto.title,
+                summary = dto.summaryText,
+                glossary = glossaryDtos.map { GlossaryItem(it.term, it.definition) }
+            )
+            Result.success(material)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun getMaterialsForSubject(subjectId: String): Result<List<Material>> {
         return try {
             val dtos = materialsSource.getMaterials(subjectId)

@@ -10,6 +10,7 @@ import com.praktika.studentdiary.domain.repository.MaterialsRepository
 import com.praktika.studentdiary.domain.repository.ScheduleRepository
 import com.praktika.studentdiary.presentation.events.MaterialsScreenEvents
 import com.praktika.studentdiary.presentation.model.MaterialsScreenUiModel
+import com.praktika.studentdiary.presentation.navigation.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +23,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MaterialsScreenViewModel @Inject constructor(
+    private val navigator: Navigator,
     private val authRepository: AuthRepository,
     private val scheduleRepository: ScheduleRepository,
     private val materialsRepository: MaterialsRepository,
@@ -79,6 +81,9 @@ class MaterialsScreenViewModel @Inject constructor(
             is MaterialsScreenEvents.DeleteMaterial -> deleteMaterial(event.materialId)
             is MaterialsScreenEvents.ImportPdf -> importPdf(event.uri, event.fileName)
             is MaterialsScreenEvents.DismissError -> _uiState.update { it.copy(error = null) }
+            is MaterialsScreenEvents.GoToSimulator -> {
+                navigator.navigateTo("simulator?materialId=${event.materialId}")
+            }
         }
     }
 

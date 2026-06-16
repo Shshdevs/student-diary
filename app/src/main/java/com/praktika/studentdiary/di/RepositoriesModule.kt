@@ -4,10 +4,12 @@ import com.praktika.studentdiary.data.repository.AuthRepositoryImpl
 import com.praktika.studentdiary.data.repository.DashboardRepositoryImpl
 import com.praktika.studentdiary.data.repository.MaterialsRepositoryImpl
 import com.praktika.studentdiary.data.repository.ScheduleRepositoryImpl
+import com.praktika.studentdiary.data.repository.TestRepositoryImpl
 import com.praktika.studentdiary.domain.repository.AuthRepository
 import com.praktika.studentdiary.domain.repository.DashboardRepository
 import com.praktika.studentdiary.domain.repository.MaterialsRepository
 import com.praktika.studentdiary.domain.repository.ScheduleRepository
+import com.praktika.studentdiary.domain.repository.TestRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -41,5 +43,9 @@ abstract class RepositoriesModule {
         dashboardRepositoryImpl: MaterialsRepositoryImpl,
     ): MaterialsRepository
 
-
+    @Binds
+    @Singleton
+    abstract fun bindTestRepository(
+        testRepositoryImpl: TestRepositoryImpl,
+    ): TestRepository
 }

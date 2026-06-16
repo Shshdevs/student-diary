@@ -4,6 +4,7 @@ import com.praktika.studentdiary.data.dto.GlossaryDto
 import com.praktika.studentdiary.data.dto.MaterialDto
 
 interface MaterialsSource {
+    suspend fun getMaterialById(materialId: String): MaterialDto
     suspend fun getMaterials(subjectId: String): List<MaterialDto>
     suspend fun getGlossary(materialId: String): List<GlossaryDto>
     suspend fun saveMaterial(material: MaterialDto): MaterialDto

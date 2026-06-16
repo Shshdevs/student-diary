@@ -21,7 +21,6 @@ fun BottomNavBar(
         BottomNavItem.Dashboard,
         BottomNavItem.Calendar,
         BottomNavItem.Materials,
-        BottomNavItem.Simulator
     )
 
     NavigationBar {

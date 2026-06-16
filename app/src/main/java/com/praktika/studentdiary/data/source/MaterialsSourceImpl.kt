@@ -11,6 +11,12 @@ class MaterialsSourceImpl @Inject constructor(
     private val postgres: Postgrest,
 ) : MaterialsSource {
 
+    override suspend fun getMaterialById(materialId: String): MaterialDto {
+        return postgres["materials"]
+            .select { filter { eq("id", materialId); eq("is_deleted", false) } }
+            .decodeSingle()
+    }
+
     override suspend fun getMaterials(subjectId: String): List<MaterialDto> {
         return postgres["materials"]
             .select { filter { eq("subject_id", subjectId); eq("is_deleted", false) } }

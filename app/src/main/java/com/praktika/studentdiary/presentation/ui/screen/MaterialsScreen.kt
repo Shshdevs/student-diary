@@ -62,8 +62,7 @@ fun MaterialsScreenContent(
         uri?.let {
             onEvent(
                 MaterialsScreenEvents.ImportPdf(
-                    it,
-                    getFileName(context, uri) ?: "Импортиварованный материал"
+                    it, getFileName(context, uri) ?: "Импортиварованный материал"
                 )
             )
         }
@@ -71,16 +70,12 @@ fun MaterialsScreenContent(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Материалы") },
-                actions = {
-                    IconButton(onClick = { pdfLauncher.launch("application/pdf") }) {
-                        Icon(painterResource(R.drawable.add), contentDescription = "Добавить PDF")
-                    }
+            TopAppBar(title = { Text("Материалы") }, actions = {
+                IconButton(onClick = { pdfLauncher.launch("application/pdf") }) {
+                    Icon(painterResource(R.drawable.add), contentDescription = "Добавить PDF")
                 }
-            )
-        }
-    ) { paddingValues ->
+            })
+        }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -92,8 +87,7 @@ fun MaterialsScreenContent(
                     FilterChip(
                         selected = uiState.selectedSubjectId == subject.id,
                         onClick = { onEvent(MaterialsScreenEvents.SelectSubject(subject.id)) },
-                        label = { Text(subject.name) }
-                    )
+                        label = { Text(subject.name) })
                 }
             }
 
@@ -113,15 +107,21 @@ fun MaterialsScreenContent(
             }
 
             if (uiState.selectedMaterial != null) {
-                MaterialDetailView(material = uiState.selectedMaterial) {
-                    onEvent(MaterialsScreenEvents.SelectMaterial(null))
-                }
+                MaterialDetailView(
+                    material = uiState.selectedMaterial,
+                    onBack = { onEvent(MaterialsScreenEvents.SelectMaterial(null)) },
+                    onStartSimulator = { materialId ->
+                        onEvent(
+                            MaterialsScreenEvents.GoToSimulator(
+                                materialId
+                            )
+                        )
+                    })
             } else {
                 MaterialsList(
                     materials = uiState.materials,
                     onMaterialClick = { onEvent(MaterialsScreenEvents.SelectMaterial(it)) },
-                    onDeleteClick = { onEvent(MaterialsScreenEvents.DeleteMaterial(it.id)) }
-                )
+                    onDeleteClick = { onEvent(MaterialsScreenEvents.DeleteMaterial(it.id)) })
             }
         }
     }

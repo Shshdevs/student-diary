@@ -13,4 +13,5 @@ sealed class MaterialsScreenEvents {
     data class DeleteMaterial(val materialId: String) : MaterialsScreenEvents()
     data class ImportPdf(val uri: Uri, val fileName: String) : MaterialsScreenEvents()
     object DismissError : MaterialsScreenEvents()
+    data class GoToSimulator(val materialId: String) : MaterialsScreenEvents()
 }

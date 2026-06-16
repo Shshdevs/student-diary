@@ -5,14 +5,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.praktika.studentdiary.presentation.ui.screen.AuthScreen
 import com.praktika.studentdiary.presentation.ui.screen.DashboardScreen
 import com.praktika.studentdiary.presentation.ui.screen.MaterialsScreen
 import com.praktika.studentdiary.presentation.ui.screen.ScheduleScreen
+import com.praktika.studentdiary.presentation.ui.screen.SimulatorScreen
 
 @Composable
 fun NavHostContainer(
@@ -86,10 +89,21 @@ fun NavHostContainer(
 
         navigation(
             route = "simulator_graph",
-            startDestination = "simulator"
+            startDestination = "simulator?materialId={materialId}"
         ) {
-            composable("simulator") {
+            composable(
+                route = "simulator?materialId={materialId}",
+                arguments = listOf(
+                    navArgument("materialId") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) { backStackEntry ->
+                val materialId = backStackEntry.arguments?.getString("materialId")
 
+                 SimulatorScreen(materialId = materialId)
             }
         }
 

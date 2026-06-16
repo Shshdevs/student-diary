@@ -12,6 +12,8 @@ import com.praktika.studentdiary.data.source.PdfParserSource
 import com.praktika.studentdiary.data.source.PdfParserSourceImpl
 import com.praktika.studentdiary.data.source.ScheduleSource
 import com.praktika.studentdiary.data.source.ScheduleSourceImpl
+import com.praktika.studentdiary.data.source.TestSource
+import com.praktika.studentdiary.data.source.TestSourceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -56,4 +58,10 @@ abstract class SourcesModule {
     abstract fun bindPdfParseSource(
         pdfParserSource: PdfParserSourceImpl,
     ): PdfParserSource
+
+    @Binds
+    @Singleton
+    abstract fun bindTestSource(
+        testSourceImpl: TestSourceImpl,
+    ): TestSource
 }
