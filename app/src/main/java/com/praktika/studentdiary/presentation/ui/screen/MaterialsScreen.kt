@@ -1,6 +1,8 @@
 package com.praktika.studentdiary.presentation.ui.screen
 
+import android.content.Context
 import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +26,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -52,10 +55,18 @@ fun MaterialsScreenContent(
     uiState: MaterialsScreenUiModel,
     onEvent: (MaterialsScreenEvents) -> Unit,
 ) {
+    val context = LocalContext.current
     val pdfLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { onEvent(MaterialsScreenEvents.ImportPdf(it, "Импортированный файл")) }
+        uri?.let {
+            onEvent(
+                MaterialsScreenEvents.ImportPdf(
+                    it,
+                    getFileName(context, uri) ?: "Импортиварованный материал"
+                )
+            )
+        }
     }
 
     Scaffold(
@@ -116,3 +127,26 @@ fun MaterialsScreenContent(
     }
 }
 
+
+fun getFileName(context: Context, uri: Uri): String? {
+    var result: String? = null
+    if (uri.scheme == "content") {
+        val cursor = context.contentResolver.query(uri, null, null, null, null)
+        cursor.use {
+            if (it != null && it.moveToFirst()) {
+                val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (index != -1) {
+                    result = it.getString(index)
+                }
+            }
+        }
+    }
+    if (result == null) {
+        result = uri.path
+        val cut = result?.lastIndexOf('/')
+        if (cut != null && cut != -1) {
+            result = result.substring(cut + 1)
+        }
+    }
+    return result
+}

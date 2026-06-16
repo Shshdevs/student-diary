@@ -1,6 +1,7 @@
 package com.praktika.studentdiary.presentation.viewmodel
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.praktika.studentdiary.data.source.PdfParserSource
@@ -32,13 +33,13 @@ class MaterialsScreenViewModel @Inject constructor(
     private var currentUserId: String? = null
 
     private fun safeLaunch(
-        loadingState: (Boolean) -> MaterialsScreenUiModel = { _uiState.value.copy(isLoading = it) },
         isAiAction: Boolean = false,
         errorMessage: String = "Произошла ошибка",
         action: suspend () -> Unit,
     ) {
         viewModelScope.launch {
-            _uiState.update { loadingState(true) }
+            _uiState.update { it.copy(isLoading = true, isGeneratingAi = isAiAction) }
+
             try {
                 action()
             } catch (e: Exception) {
@@ -147,6 +148,7 @@ class MaterialsScreenViewModel @Inject constructor(
             val rawText = pdfParserSource.extractTextFromPdf(uri)
             if (rawText.isBlank()) throw Exception("PDF пуст")
 
+            Log.d("PDF", rawText)
             materialsRepository.processAndSaveNewMaterial(userId, subjectId, fileName, rawText)
             _uiState.update { it.copy(isGeneratingAi = false) }
             loadMaterialsForSubject(subjectId)

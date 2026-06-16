@@ -45,11 +45,11 @@ fun NavHostContainer(
 
     NavHost(
         navController = navController,
-        startDestination = "auth",
+        startDestination = "auth_graph",
         modifier = Modifier.padding(paddingValues)
     ) {
         navigation(
-            route = "auth",
+            route = "auth_graph",
             startDestination = "auth"
         ) {
             composable("auth") {
@@ -58,7 +58,7 @@ fun NavHostContainer(
         }
 
         navigation(
-            route = "dashboard",
+            route = "dashboard_graph",
             startDestination = "dashboard"
         ) {
             composable("dashboard") {
@@ -67,7 +67,7 @@ fun NavHostContainer(
         }
 
         navigation(
-            route = "calendar",
+            route = "calendar_graph",
             startDestination = "calendar"
         ) {
             composable("calendar") {
@@ -76,7 +76,7 @@ fun NavHostContainer(
         }
 
         navigation(
-            route = "materials",
+            route = "materials_graph",
             startDestination = "materials"
         ) {
             composable("materials") {
@@ -85,7 +85,7 @@ fun NavHostContainer(
         }
 
         navigation(
-            route = "simulator",
+            route = "simulator_graph",
             startDestination = "simulator"
         ) {
             composable("simulator") {

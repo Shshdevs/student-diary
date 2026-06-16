@@ -1,5 +1,6 @@
 package com.praktika.studentdiary.data.source
 
+import android.util.Log
 import com.praktika.studentdiary.BuildConfig
 import com.praktika.studentdiary.data.dto.AiGenerationResultDto
 import com.praktika.studentdiary.data.dto.MistralMessage
@@ -61,6 +62,7 @@ class AiSourceImpl @Inject constructor(
             throw Exception("Mistral API error (${httpResponse.status}): $errorBody")
         }
 
+        Log.d("Ktor response", httpResponse.toString())
         val response: MistralResponse = httpResponse.body()
 
         val rawContent = response.choices.firstOrNull()?.message?.content

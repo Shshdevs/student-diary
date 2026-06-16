@@ -1,5 +1,6 @@
 package com.praktika.studentdiary.data.source
 
+import android.util.Log
 import com.praktika.studentdiary.data.dto.GlossaryDto
 import com.praktika.studentdiary.data.dto.MaterialDto
 import io.github.jan.supabase.postgrest.Postgrest
@@ -23,6 +24,7 @@ class MaterialsSourceImpl @Inject constructor(
     }
 
     override suspend fun saveMaterial(material: MaterialDto): MaterialDto {
+        Log.d("Saving material", material.toString())
         return postgres["materials"]
             .insert(material) { select() }
             .decodeSingle()
