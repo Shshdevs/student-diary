@@ -13,4 +13,6 @@ sealed class SimulatorScreenEvents {
     object FinishTest : SimulatorScreenEvents()
     object RetryTest : SimulatorScreenEvents()
     object DismissError : SimulatorScreenEvents()
+
+    object OnGoBack : SimulatorScreenEvents()
 }

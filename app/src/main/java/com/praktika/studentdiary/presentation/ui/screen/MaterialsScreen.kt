@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -70,7 +71,7 @@ fun MaterialsScreenContent(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Материалы") }, actions = {
+            MediumTopAppBar(title = { Text("Материалы") }, actions = {
                 IconButton(onClick = { pdfLauncher.launch("application/pdf") }) {
                     Icon(painterResource(R.drawable.add), contentDescription = "Добавить PDF")
                 }

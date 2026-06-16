@@ -68,8 +68,11 @@ class AuthViewModel @Inject constructor(
 
     fun signIn(email: String, password: String) {
         viewModelScope.launch {
-            authRepository.signIn(email, password)
-            onLoginSuccess()
+            authRepository.signIn(email, password).fold(
+                onSuccess = { onLoginSuccess() },
+                onFailure = { e -> Log.e("Supabase Auth", e.toString()) }
+            )
+
         }
     }
 

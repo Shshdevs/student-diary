@@ -28,6 +28,11 @@ fun NavHostContainer(
             when (intent) {
                 is NavigationIntent.NavigateTo -> {
                     navController.navigate(intent.route) {
+                        if (intent.route == "auth") {
+                            navigator.setMenuVisible(false)
+                        } else {
+                            navigator.setMenuVisible(true)
+                        }
                         intent.popUpTo?.let { route ->
                             popUpTo(route) {
                                 inclusive = intent.inclusive
@@ -103,7 +108,7 @@ fun NavHostContainer(
             ) { backStackEntry ->
                 val materialId = backStackEntry.arguments?.getString("materialId")
 
-                 SimulatorScreen(materialId = materialId)
+                SimulatorScreen(materialId = materialId)
             }
         }
 

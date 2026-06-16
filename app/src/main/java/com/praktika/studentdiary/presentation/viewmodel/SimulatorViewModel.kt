@@ -3,11 +3,11 @@ package com.praktika.studentdiary.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.praktika.studentdiary.domain.repository.AuthRepository
-import com.praktika.studentdiary.domain.repository.DashboardRepository
 import com.praktika.studentdiary.domain.repository.MaterialsRepository
 import com.praktika.studentdiary.domain.repository.TestRepository
 import com.praktika.studentdiary.presentation.events.SimulatorScreenEvents
 import com.praktika.studentdiary.presentation.model.SimulatorScreenUiModel
+import com.praktika.studentdiary.presentation.navigation.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +24,7 @@ class SimulatorViewModel @Inject constructor(
     private val testRepository: TestRepository,
     private val authRepository: AuthRepository,
     private val materialsRepository: MaterialsRepository,
-    private val dashboardRepository: DashboardRepository,
+    private val navigator: Navigator,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SimulatorScreenUiModel())
@@ -58,6 +58,9 @@ class SimulatorViewModel @Inject constructor(
             SimulatorScreenEvents.FinishTest -> finishTest()
             SimulatorScreenEvents.RetryTest -> retryTest()
             SimulatorScreenEvents.DismissError -> _uiState.update { it.copy(error = null) }
+            SimulatorScreenEvents.OnGoBack -> {
+                navigator.navigateBack()
+            }
         }
     }
 

@@ -2,7 +2,10 @@ package com.praktika.studentdiary.presentation.navigation
 
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,7 +16,7 @@ sealed class NavigationIntent {
         val inclusive: Boolean = false,
         val launchSingleTop: Boolean = false,
         val restoreState: Boolean = false,
-        val saveState: Boolean = false
+        val saveState: Boolean = false,
     ) : NavigationIntent()
 
     object NavigateBack : NavigationIntent()
@@ -21,6 +24,8 @@ sealed class NavigationIntent {
 
 @Singleton
 class Navigator @Inject constructor() {
+    private val _showMenu = MutableStateFlow(false)
+    val showMenu = _showMenu.asStateFlow()
     private val _navigationEvents = MutableSharedFlow<NavigationIntent>(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
@@ -33,7 +38,7 @@ class Navigator @Inject constructor() {
         inclusive: Boolean = false,
         launchSingleTop: Boolean = false,
         restoreState: Boolean = false,
-        saveState: Boolean = false
+        saveState: Boolean = false,
     ) {
         _navigationEvents.tryEmit(
             NavigationIntent.NavigateTo(
@@ -49,5 +54,9 @@ class Navigator @Inject constructor() {
 
     fun navigateBack() {
         _navigationEvents.tryEmit(NavigationIntent.NavigateBack)
+    }
+
+    fun setMenuVisible(visible: Boolean) {
+        _showMenu.update { visible }
     }
 }
